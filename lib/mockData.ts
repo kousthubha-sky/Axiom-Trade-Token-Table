@@ -117,9 +117,9 @@ export const TOKENS: TokenRow[] = [
   },
 ];
 
-export async function fetchTokensMock(): Promise<TokenRow[]> {
+export async function fetchTokensMock(delayMs = 650): Promise<TokenRow[]> {
   console.log("fetchTokensMock called");
-  await new Promise((r) => setTimeout(r, 650));
+  await new Promise((r) => setTimeout(r, delayMs));
   // occasional mock failure to exercise error UI (kept small)
   if (Math.random() < 0.06) throw new Error("Mock network error");
   console.log("fetchTokensMock returning TOKENS", { count: TOKENS.length });

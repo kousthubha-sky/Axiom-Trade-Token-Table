@@ -1,12 +1,19 @@
 "use client";
 
-import { Component, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { setSearch, setTab, toggleSort } from "@/lib/store";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { clampNumber } from "@/lib/tokenFormatters";
-import type { TokenRow, TokenCategory } from "@/lib/types";
-import { fetchTokensMock } from "@/lib/mockData";
+import { Component } from "react";
+import {
+  useTokenData,
+  useTokenFiltering,
+  useTokenSorting,
+  useTokenSearch,
+  useTokenTabs,
+  useTokenSort,
+  useTokenDetails,
+  useTokenCopy,
+  useTokenCount,
+} from '../hooks';
+import { TOKENS } from '../lib/mockData';
+import type { TokenRow } from '../lib/types';
 import {
   TokenRow as TokenRowComponent,
   TokenSkeletonRow,
@@ -14,11 +21,7 @@ import {
   TokenSearchBar,
   TokenTabs,
   TableContainer,
-} from "@/components";
-
-function copyText(text: string) {
-  navigator.clipboard.writeText(text);
-}
+} from "../components";
 
 class ErrorBoundary extends Component<
   { children: React.ReactNode },
@@ -47,72 +50,20 @@ class ErrorBoundary extends Component<
 }
 
 export default function Home() {
-  const dispatch = useAppDispatch();
-  const { tab, sortKey, sortDir, search } = useAppSelector((s) => s.tokensUi);
-
-  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ["tokens"],
-    queryFn: fetchTokensMock,
-  });
-
-  useEffect(() => {
-    console.log("React Query state", {
-      isLoading,
-      isError,
-      isFetching,
-      error: error ? (error as Error).message : null,
-      dataCount: data?.length ?? 0,
-    });
-  }, [data, isLoading, isError, isFetching, error]);
-
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selected, setSelected] = useState<TokenRow | null>(null);
-
-  function openDetails(t: TokenRow) {
-    console.log("Details modal opened", { id: t.id, name: t.name, symbol: t.symbol });
-    setSelected(t);
-    setDetailsOpen(true);
-  }
-
-  const rows = useMemo(() => {
-    const tokens = data ?? [];
-    const q = search.trim().toLowerCase();
-
-    const filtered = tokens
-      .filter((t) => t.category === tab)
-      .filter((t) => {
-        if (!q) return true;
-        return (
-          t.name.toLowerCase().includes(q) ||
-          t.symbol.toLowerCase().includes(q) ||
-          t.address.toLowerCase().includes(q)
-        );
-      });
-
-    const dir = sortDir === "asc" ? 1 : -1;
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortKey === "name") return a.name.localeCompare(b.name) * dir;
-      const av = clampNumber(a[sortKey]);
-      const bv = clampNumber(b[sortKey]);
-      return (av - bv) * dir;
-    });
-
-    return sorted;
-  }, [data, tab, sortKey, sortDir, search]);
-
-  useEffect(() => {
-    console.log("Rows computed", { tab, sortKey, sortDir, search, rows: rows.length });
-  }, [rows, tab, sortKey, sortDir, search]);
-
-  const tokenCounts = useMemo(() => {
-    const allTokens = data ?? [];
-    return {
-      new: allTokens.filter((t) => t.category === "new").length,
-      final: allTokens.filter((t) => t.category === "final").length,
-      migrated: allTokens.filter((t) => t.category === "migrated").length,
-    };
-  }, [data]);
+  // Data fetching
+  const { data: rawTokens = TOKENS, isLoading, isFetching, isError, error, refetch } = useTokenData();
+  
+  // State management hooks
+  const { search, setSearch } = useTokenSearch();
+  const { activeTab, setTab, tabs } = useTokenTabs();
+  const { sortKey, sortDir, toggleSort } = useTokenSort();
+  const { open, selected, openDetails, closeDetails } = useTokenDetails();
+  const { copyText } = useTokenCopy();
+  const tokenCounts = useTokenCount(rawTokens);
+  
+  // Data processing hooks
+  const filtered = useTokenFiltering(rawTokens, search, activeTab);
+  const sorted = useTokenSorting(filtered, sortKey, sortDir);
 
   return (
     <div className="min-h-screen bg-[#070A12] text-white">
@@ -156,18 +107,15 @@ export default function Home() {
               </div>
             </div>
 
-            <TokenSearchBar
-              value={search}
-              onChange={(value) => dispatch(setSearch(value))}
-            />
+            <TokenSearchBar />
           </div>
         </div>
 
         {/* Tabs */}
         <div className="mt-5">
           <TokenTabs
-            activeTab={tab}
-            onTabChange={(t) => dispatch(setTab(t))}
+            activeTab={activeTab}
+            onTabChange={setTab}
             counts={tokenCounts}
           />
         </div>
@@ -180,7 +128,7 @@ export default function Home() {
                 <div className="text-sm font-medium text-white/80">
                   Tokens
                   <span className="ml-2 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/60">
-                    {tab}
+                    {activeTab}
                   </span>
                   {isFetching ? (
                     <span className="ml-2 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/60">
@@ -224,10 +172,7 @@ export default function Home() {
                   <th className="w-[320px] px-4 py-3 sm:px-6">
                     <button
                       type="button"
-                      onClick={() => {
-                        dispatch(toggleSort("name"));
-                        console.log("Sort column clicked", { clicked: "name", sortKey, sortDir });
-                      }}
+                      onClick={() => toggleSort("name")}
                       className="group inline-flex items-center gap-2"
                       aria-label="Sort by token name"
                     >
@@ -264,7 +209,7 @@ export default function Home() {
                   <th className="px-4 py-3 text-right sm:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("price"))}
+                      onClick={() => toggleSort("price")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by price"
                     >
@@ -298,7 +243,7 @@ export default function Home() {
                   <th className="px-4 py-3 text-right sm:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("change5m"))}
+                      onClick={() => toggleSort("change5m")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by 5m change"
                     >
@@ -332,7 +277,7 @@ export default function Home() {
                   <th className="px-4 py-3 text-right sm:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("change1h"))}
+                      onClick={() => toggleSort("change1h")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by 1h change"
                     >
@@ -366,7 +311,7 @@ export default function Home() {
                   <th className="hidden px-4 py-3 text-right sm:table-cell sm:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("change24h"))}
+                      onClick={() => toggleSort("change24h")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by 24h change"
                     >
@@ -400,7 +345,7 @@ export default function Home() {
                   <th className="px-4 py-3 text-right sm:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("volume24h"))}
+                      onClick={() => toggleSort("volume24h")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by 24h volume"
                     >
@@ -434,7 +379,7 @@ export default function Home() {
                   <th className="hidden px-4 py-3 text-right md:table-cell md:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("liquidity"))}
+                      onClick={() => toggleSort("liquidity")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by liquidity"
                     >
@@ -468,7 +413,7 @@ export default function Home() {
                   <th className="hidden px-4 py-3 text-right lg:table-cell lg:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("marketCap"))}
+                      onClick={() => toggleSort("marketCap")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by market cap"
                     >
@@ -502,7 +447,7 @@ export default function Home() {
                   <th className="hidden px-4 py-3 text-right xl:table-cell xl:px-6">
                     <button
                       type="button"
-                      onClick={() => dispatch(toggleSort("txns24h"))}
+                      onClick={() => toggleSort("txns24h")}
                       className="group inline-flex items-center justify-end gap-2"
                       aria-label="Sort by transactions"
                     >
@@ -569,14 +514,14 @@ export default function Home() {
                       </div>
                     </td>
                   </tr>
-                ) : rows.length === 0 ? (
+                ) : sorted.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="px-6 py-10 text-center text-sm text-white/55">
                       No matches.
                     </td>
                   </tr>
                 ) : (
-                  rows.map((t) => (
+                  sorted.map((t) => (
                     <tr
                       key={t.id}
                       className={[
@@ -616,8 +561,8 @@ export default function Home() {
 
       {/* Details Modal */}
       <TokenDetailsModal
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
+        open={open}
+        onOpenChange={closeDetails}
         token={selected}
         onCopyAddress={copyText}
       />

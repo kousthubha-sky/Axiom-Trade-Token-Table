@@ -1,18 +1,17 @@
 "use client";
 
 import { memo } from "react";
+import { useTokenSearch } from '@/hooks';
 
 interface TokenSearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
   placeholder?: string;
 }
 
 export const TokenSearchBar = memo(function TokenSearchBar({
-  value,
-  onChange,
   placeholder = "Search by name, symbol, or address...",
 }: TokenSearchBarProps) {
+  const { search, setSearch } = useTokenSearch();
+  
   return (
     <div className="flex flex-col gap-2 sm:w-[420px]">
       <label className="text-xs font-medium text-white/50">Search (UI only)</label>
@@ -37,8 +36,8 @@ export const TokenSearchBar = memo(function TokenSearchBar({
         </svg>
         <input
           type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder={placeholder}
           className="min-w-0 flex-1 bg-transparent text-sm text-white/90 placeholder:text-white/30 focus:outline-none"
         />
