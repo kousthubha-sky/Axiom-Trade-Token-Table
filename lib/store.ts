@@ -1,4 +1,5 @@
 import { configureStore, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { TokenRow } from "./types";
 
 export type TokenCategory = "new" | "final" | "migrated";
 
@@ -51,11 +52,30 @@ const tokensUiSlice = createSlice({
   },
 });
 
+/**
+ * Price updates slice - tracks latest price/metric changes
+ * Used for real-time color animations
+ */
+const priceUpdatesSlice = createSlice({
+  name: "priceUpdates",
+  initialState: {} as Record<string, Partial<TokenRow>>,
+  reducers: {
+    updateTokenPrices(state, action: PayloadAction<Record<string, Partial<TokenRow>>>) {
+      return action.payload;
+    },
+    clearPriceUpdates() {
+      return {};
+    },
+  },
+});
+
 export const { setTab, setSearch, toggleSort } = tokensUiSlice.actions;
+export const { updateTokenPrices, clearPriceUpdates } = priceUpdatesSlice.actions;
 
 export const store = configureStore({
   reducer: {
     tokensUi: tokensUiSlice.reducer,
+    priceUpdates: priceUpdatesSlice.reducer,
   },
 });
 

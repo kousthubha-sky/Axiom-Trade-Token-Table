@@ -12,6 +12,7 @@ import { ChangeCell } from "./ChangeCell";
 import { ChainBadge } from "./ChainBadge";
 import { TokenActionsPopover } from "./TokenActionsPopover";
 import { formatCompact, shortAddress } from "@/lib/tokenFormatters";
+import { useAppSelector } from "@/lib/redux";
 import type { TokenRow as TokenType } from "@/lib/types";
 
 interface TokenRowProps {
@@ -35,6 +36,15 @@ export const TokenRow = memo(function TokenRow({
   onRowClick,
   onCopyAddress,
 }: TokenRowProps) {
+  // Get latest updates for this token
+  const priceUpdate = useAppSelector((state) => state.priceUpdates[token.id]);
+  
+  // Use updated values if available, otherwise use original
+  const volume24h = priceUpdate?.volume24h ?? token.volume24h;
+  const txns24h = priceUpdate?.txns24h ?? token.txns24h;
+  const buys24h = priceUpdate?.buys24h ?? token.buys24h;
+  const sells24h = priceUpdate?.sells24h ?? token.sells24h;
+  
   return (
     <>
       <TokenCell className="px-4 py-4 sm:px-6">
@@ -102,25 +112,25 @@ export const TokenRow = memo(function TokenRow({
 
       <TokenCell align="right">
         <div className="font-semibold text-white/90">
-          <PriceCell price={token.price} marketCap={token.marketCap} />
+          <PriceCell tokenId={token.id} price={token.price} marketCap={token.marketCap} />
         </div>
       </TokenCell>
 
       <TokenCell>
-        <ChangeCell value={token.change5m} />
+        <ChangeCell tokenId={token.id} value={token.change5m} field="change5m" />
       </TokenCell>
 
       <TokenCell>
-        <ChangeCell value={token.change1h} />
+        <ChangeCell tokenId={token.id} value={token.change1h} field="change1h" />
       </TokenCell>
 
       <TokenCell className="hidden px-4 py-4 sm:table-cell sm:px-6">
-        <ChangeCell value={token.change24h} />
+        <ChangeCell tokenId={token.id} value={token.change24h} field="change24h" />
       </TokenCell>
 
       <TokenCell align="right">
         <div className="font-semibold text-white/90">
-          {formatCompact(token.volume24h)}
+          {formatCompact(volume24h)}
         </div>
         <div className="mt-1 text-xs text-white/45">24h volume</div>
       </TokenCell>
@@ -141,7 +151,7 @@ export const TokenRow = memo(function TokenRow({
 
       <TokenCell align="right" className="hidden xl:table-cell xl:px-6">
         <div className="font-semibold text-white/90">
-          {formatCompact(token.txns24h)}
+          {formatCompact(txns24h)}
         </div>
         <div className="mt-1 text-xs text-white/45">24h txns</div>
       </TokenCell>
@@ -149,11 +159,11 @@ export const TokenRow = memo(function TokenRow({
       <TokenCell align="right" className="hidden xl:table-cell xl:px-6">
         <div className="inline-flex items-center gap-2">
           <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-200">
-            {formatCompact(token.buys24h)}
+            {formatCompact(buys24h)}
           </span>
           <span className="text-white/30">/</span>
           <span className="rounded-md border border-rose-500/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-200">
-            {formatCompact(token.sells24h)}
+            {formatCompact(sells24h)}
           </span>
         </div>
       </TokenCell>
