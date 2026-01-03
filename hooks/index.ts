@@ -7,3 +7,4 @@ export { useTokenSort } from './useTokenSort';
 export { useTokenData } from './useTokenData';
 export { useTokenCopy } from './useTokenCopy';
 export { useTokenCount } from './useTokenCount';
+export { useTokenPriceUpdates } from './useTokenPriceUpdates';

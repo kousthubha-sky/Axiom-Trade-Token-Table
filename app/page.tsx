@@ -11,6 +11,7 @@ import {
   useTokenDetails,
   useTokenCopy,
   useTokenCount,
+  useTokenPriceUpdates,
 } from '../hooks';
 import { TOKENS } from '../lib/mockData';
 import type { TokenRow } from '../lib/types';
@@ -64,6 +65,9 @@ export default function Home() {
   // Data processing hooks
   const filtered = useTokenFiltering(rawTokens, search, activeTab);
   const sorted = useTokenSorting(filtered, sortKey, sortDir);
+  
+  // Start real-time updates (use rawTokens to avoid restarting on filter/sort changes)
+  const { isUpdating } = useTokenPriceUpdates(rawTokens);
 
   return (
     <div className="min-h-screen bg-[#070A12] text-white">
@@ -135,6 +139,11 @@ export default function Home() {
                       Updating…
                     </span>
                   ) : null}
+                  {isUpdating && !isLoading && (
+                    <span className="ml-2 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-300 animate-pulse">
+                      Live Updates
+                    </span>
+                  )}
                 </div>
 
                 <div className="hidden items-center gap-2 text-xs text-white/50 sm:flex">
