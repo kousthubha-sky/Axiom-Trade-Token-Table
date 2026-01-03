@@ -4,10 +4,8 @@ import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-
-function cn(...parts: Array<string | undefined | false | null>) {
-  return parts.filter(Boolean).join(" ");
-}
+import { cn } from "@/lib/cn";
+import { ANIMATION_TIMINGS } from "@/lib/constants";
 
 /* ----------------------------- Tooltip ----------------------------- */
 
@@ -17,7 +15,10 @@ export function TooltipProvider({
   children: React.ReactNode;
 }) {
   return (
-    <TooltipPrimitive.Provider delayDuration={250} skipDelayDuration={80}>
+    <TooltipPrimitive.Provider 
+      delayDuration={ANIMATION_TIMINGS.TOOLTIP_DELAY_DURATION} 
+      skipDelayDuration={ANIMATION_TIMINGS.TOOLTIP_SKIP_DELAY_DURATION}
+    >
       {children}
     </TooltipPrimitive.Provider>
   );

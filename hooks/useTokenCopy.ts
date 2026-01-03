@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ANIMATION_TIMINGS } from '../lib/constants';
 
 /**
  * Hook for copy-to-clipboard functionality with feedback.
@@ -8,7 +9,7 @@ import { useState } from 'react';
  * @remarks
  * - Uses navigator.clipboard API for copying text
  * - Provides visual feedback through isCopied state
- * - Automatically resets copied state after 1.5 seconds
+ * - Automatically resets copied state after configured duration
  * - Error handling for clipboard write failures
  */
 export function useTokenCopy() {
@@ -18,8 +19,7 @@ export function useTokenCopy() {
     try {
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
-      // Reset after 1.5 seconds
-      setTimeout(() => setIsCopied(false), 1500);
+      setTimeout(() => setIsCopied(false), ANIMATION_TIMINGS.COPY_FEEDBACK_DURATION);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
       // Optionally: show error toast
