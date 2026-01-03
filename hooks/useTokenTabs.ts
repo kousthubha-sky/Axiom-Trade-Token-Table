@@ -1,19 +1,8 @@
 import { useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../lib/redux';
 import { setTab } from '../lib/store';
+import { TABS_CONFIG } from '../lib/constants';
 import type { TokenCategory } from '../lib/types';
-
-interface TabConfig {
-  id: TokenCategory;
-  label: string;
-  hint: string;
-}
-
-const TABS_CONFIG: TabConfig[] = [
-  { id: 'new' as const, label: 'New pairs', hint: 'Fresh listings & early momentum' },
-  { id: 'final' as const, label: 'Final Stretch', hint: 'Near breakout / high activity' },
-  { id: 'migrated' as const, label: 'Migrated', hint: 'Established pairs & migrated liquidity' },
-];
 
 /**
  * Hook for managing token category tabs state through Redux.

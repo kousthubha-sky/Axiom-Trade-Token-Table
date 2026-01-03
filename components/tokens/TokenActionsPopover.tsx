@@ -6,7 +6,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/overlay";
-import { shortAddress } from "@/lib/tokenFormatters";
+import { getExplorerUrl } from "@/lib/tokenFormatters";
+import { ANIMATION_TIMINGS } from "@/lib/constants";
 import type { TokenRow as TokenType } from "@/lib/types";
 
 interface TokenActionsPopoverProps {
@@ -23,17 +24,7 @@ export const TokenActionsPopover = memo(function TokenActionsPopover({
   const handleCopy = () => {
     onCopyAddress(token.address);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  const getExplorerUrl = () => {
-    const baseUrl =
-      token.chain === "SOL"
-        ? "https://solscan.io/token"
-        : token.chain === "BASE"
-          ? "https://basescan.org/token"
-          : "https://etherscan.io/token";
-    return `${baseUrl}/${token.address}`;
+    setTimeout(() => setCopied(false), ANIMATION_TIMINGS.COPY_FEEDBACK_DURATION);
   };
 
   return (
@@ -59,7 +50,7 @@ export const TokenActionsPopover = memo(function TokenActionsPopover({
           <span>{copied ? "Copied!" : "Copy address"}</span>
         </button>
         <a
-          href={getExplorerUrl()}
+          href={getExplorerUrl(token.chain, token.address)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"

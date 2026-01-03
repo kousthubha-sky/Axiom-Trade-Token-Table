@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/overlay";
-import { formatPrice, formatCompact, formatChange, shortAddress } from "@/lib/tokenFormatters";
+import { formatPrice, formatCompact, formatChange, getExplorerUrl } from "@/lib/tokenFormatters";
 import type { TokenRow as TokenType } from "@/lib/types";
 
 interface TokenDetailsModalProps {
@@ -25,16 +25,6 @@ export const TokenDetailsModal = memo(function TokenDetailsModal({
   onCopyAddress,
 }: TokenDetailsModalProps) {
   if (!token) return null;
-
-  const getExplorerUrl = () => {
-    const baseUrl =
-      token.chain === "SOL"
-        ? "https://solscan.io/token"
-        : token.chain === "BASE"
-          ? "https://basescan.org/token"
-          : "https://etherscan.io/token";
-    return `${baseUrl}/${token.address}`;
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,7 +118,7 @@ export const TokenDetailsModal = memo(function TokenDetailsModal({
 
         <div className="mt-6 flex justify-end gap-3">
           <a
-            href={getExplorerUrl()}
+            href={getExplorerUrl(token.chain, token.address)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"

@@ -1,6 +1,8 @@
 "use client";
 
 import { memo } from "react";
+import { cn } from "@/lib/cn";
+import { CHAIN_COLORS } from "@/lib/constants";
 
 export type ChainType = "SOL" | "ETH" | "BASE";
 
@@ -9,19 +11,16 @@ interface ChainBadgeProps {
 }
 
 export const ChainBadge = memo(function ChainBadge({ chain }: ChainBadgeProps) {
-  const cls =
-    chain === "SOL"
-      ? "border-violet-500/25 bg-violet-500/10 text-violet-200"
-      : chain === "BASE"
-        ? "border-sky-500/25 bg-sky-500/10 text-sky-200"
-        : "border-amber-500/25 bg-amber-500/10 text-amber-200";
+  const colors = CHAIN_COLORS[chain];
 
   return (
     <span
-      className={[
+      className={cn(
         "inline-flex items-center rounded-md border px-2 py-1 text-[11px] font-medium",
-        cls,
-      ].join(" ")}
+        colors.border,
+        colors.bg,
+        colors.text
+      )}
     >
       {chain}
     </span>

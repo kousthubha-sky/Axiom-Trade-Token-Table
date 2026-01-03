@@ -36,3 +36,13 @@ export type TokenRow = {
   buys24h: number;
   sells24h: number;
 };
+
+/**
+ * Redux UI state shape
+ */
+export type TokensUiState = {
+  tab: TokenCategory;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  search: string;
+};

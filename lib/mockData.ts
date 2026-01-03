@@ -1,5 +1,9 @@
 import type { TokenRow } from "./types";
+import { MOCK_DATA_CONFIG } from "./constants";
 
+/**
+ * Mock token data for development/testing
+ */
 export const TOKENS: TokenRow[] = [
   {
     id: "t_aurora",
@@ -117,11 +121,21 @@ export const TOKENS: TokenRow[] = [
   },
 ];
 
-export async function fetchTokensMock(delayMs = 650): Promise<TokenRow[]> {
+/**
+ * Fetch mock token data with simulated network delay and occasional errors
+ * @param delayMs - Optional delay in milliseconds (defaults to MOCK_DATA_CONFIG.FETCH_DELAY_MS)
+ * @throws Error on simulated network failure (MOCK_DATA_CONFIG.FAILURE_RATE chance)
+ * @returns Promise resolving to token array
+ */
+export async function fetchTokensMock(delayMs = MOCK_DATA_CONFIG.FETCH_DELAY_MS): Promise<TokenRow[]> {
   console.log("fetchTokensMock called");
   await new Promise((r) => setTimeout(r, delayMs));
-  // occasional mock failure to exercise error UI (kept small)
-  if (Math.random() < 0.06) throw new Error("Mock network error");
+  
+  // Simulate occasional network error
+  if (Math.random() < MOCK_DATA_CONFIG.FAILURE_RATE) {
+    throw new Error("Mock network error");
+  }
+  
   console.log("fetchTokensMock returning TOKENS", { count: TOKENS.length });
   return TOKENS;
 }
